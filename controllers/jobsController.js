@@ -13,7 +13,7 @@ exports.getJobs = async (req, res, next) => {
     });
 }
 
-//Create new job => /api/v1/job/new
+//Create new job => /api/v1/jobs/new
 
 exports.newJob = async (req, res, next) => {
 
@@ -22,6 +22,30 @@ exports.newJob = async (req, res, next) => {
     res.status(200).json({
         success: true,
         message: 'Job Created',
+        data: job
+    });
+}
+
+//Update a job => /api/v1/jobs/:id
+exports.updateJob = async (req, res, next) => {
+    const jobId = req.params.id;
+    let job = await Job.findById(jobId);
+
+    if (!job) {
+        return res.status(404).json({
+            success: false,
+            message: 'Job not found.'
+        });
+    }
+
+    job = await Job.findByIdAndUpdate(jobId, req.body, {
+        new: true,
+        runValidators: true
+    });
+
+    res.status(200).json({
+        success: true,
+        message: 'Job is updated.',
         data: job
     });
 }
