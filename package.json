@@ -6,7 +6,7 @@
   "scripts": {
     "start": "node app.js",
     "dev": "nodemon app",
-    "prod": "SET NODE_ENV=production & nodemon app.js"
+    "prod": "SET NODE_ENV=production& nodemon app.js"
   },
   "repository": {
     "type": "git",
