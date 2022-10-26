@@ -1,5 +1,6 @@
 const mongoose = require('mongoose');
 const validator = require('validator');
+const bcrypt = require('bcryptjs');
 
 const userSchema = new mongoose.Schema({
     name: {
@@ -33,6 +34,11 @@ const userSchema = new mongoose.Schema({
     //for resetting passwords
     resetPasswprdToken: String,
     resetPasswordExpire: Date,
+});
+
+userSchema.pre('save', async function (next) {
+    //10 is recommended salt length to generate hash
+    this.password = await bcrypt.hash(this.password, 10);
 });
 
 module.exports = mongoose.model('User', userSchema)
