@@ -1,7 +1,8 @@
 const express = require('express');
-const dotenv = require('dotenv');
-
 const app = express();
+
+const dotenv = require('dotenv');
+const cookieParser = require('cookie-parser');
 
 //import db
 const connectDataBase = require('./config/database.js');
@@ -21,8 +22,11 @@ process.on('uncaughtException', err => {
 //Connecting to db
 connectDataBase();
 
-//setup body parser
+//Setup body parser
 app.use(express.json());
+
+//Setup cookie parser
+app.use(cookieParser());
 
 //importing routes
 const jobs = require('./routes/jobs.js');
