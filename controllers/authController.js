@@ -11,9 +11,13 @@ exports.registerUser = catchAsyncErrors(async (req, res, next) => {
         password,
         role
     });
+
+    //Create JWT
+    const token = User.getJwtToken();
+
     res.status(200).json({
         success: true,
         message: 'User is registered.',
-        data: user,
+        token
     });
 });
