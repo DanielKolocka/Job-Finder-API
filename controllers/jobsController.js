@@ -41,6 +41,9 @@ exports.getJob = catchAsyncErrors(async (req, res, next) => {
 
 exports.newJob = catchAsyncErrors(async (req, res, next) => {
 
+    //Adding user to body
+    req.body.user = req.user.id;
+
     const job = await Job.create(req.body);
 
     res.status(200).json({

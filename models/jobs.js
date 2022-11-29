@@ -122,6 +122,11 @@ const jobSchema = new mongoose.Schema({
         type: [Object],
         //user can't see this
         select: false
+    },
+    user: {
+        type: mongoose.Schema.ObjectId,
+        ref: 'User',
+        required: true
     }
 
 });
