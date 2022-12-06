@@ -10,9 +10,9 @@ exports.isAuthenticatedUser = catchAsyncErrors(async (req, res, next) => {
     //Bearer is authorization key's value
     if (req.headers.authorization && req.headers.authorization.startsWith('Bearer')) {
         token = req.headers.authorization.split(' ')[1]; //Split 'Bearer token': [0] = Bearer, [1] = token
-        console.log('TOKEN IS: ' + token);
+        // console.log('TOKEN IS: ' + token);
     }
-    if (!!token) {
+    if (!token) {
         console.log('TOKEN IS: ' + token);
         return next(new ErrorHandler('Login first to acess this resource.', 401));
     }
