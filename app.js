@@ -3,6 +3,7 @@ const app = express();
 
 const dotenv = require('dotenv');
 const cookieParser = require('cookie-parser');
+const fileUpload = require('express-fileupload');
 
 //import db
 const connectDataBase = require('./config/database.js');
@@ -27,6 +28,9 @@ app.use(express.json());
 
 //Setup cookie parser
 app.use(cookieParser());
+
+// Handle file uploads
+app.use(fileUpload());
 
 //importing routes
 const jobs = require('./routes/jobs.js');
