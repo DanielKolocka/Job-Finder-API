@@ -5,6 +5,7 @@ const ErrorHandler = require('../utils/errorHandler');
 const catchAsyncErrors = require('../middlewares/catchAsyncErrors.js');
 const APIFilters = require('../utils/apiFilters');
 const path = require('path');
+const fs = require('fs');
 
 //get all jobs => /api/v1/jobs
 exports.getJobs = catchAsyncErrors(async (req, res, next) => {
@@ -26,7 +27,12 @@ exports.getJobs = catchAsyncErrors(async (req, res, next) => {
 
 //Get a single job with id and slug => /api/v1/jobs/:id/:slug
 exports.getJob = catchAsyncErrors(async (req, res, next) => {
-    const job = await Job.findById(req.params.id);
+
+    //Populate added so that we see the id and the name of the user that created the job, rather than just id
+    const job = await Job.findById(req.params.id).populate({
+        path: 'user',
+        select: 'name'
+    });
 
     if (!job) {
         return next(new ErrorHandler('Job not found.', 404));
@@ -64,6 +70,11 @@ exports.updateJob = catchAsyncErrors(async (req, res, next) => {
 
     }
 
+    // Check the the user updating is the owner
+    if (job.user.toString() != req.user.id && req.user.role != 'admin') {
+        return next(new ErrorHandler(`User(${req.user.id}) is not allowed to update this job.`,));
+    }
+
     job = await Job.findByIdAndUpdate(jobId, req.body, {
         new: true,
         runValidators: true
@@ -78,10 +89,26 @@ exports.updateJob = catchAsyncErrors(async (req, res, next) => {
 
 //Delete a job => /api/v1/jobs/:id
 exports.deleteJob = catchAsyncErrors(async (req, res, next) => {
-    let job = await Job.findById(req.params.id);
+    let job = await Job.findById(req.params.id).select('+applicantsApplied');
 
     if (!job) {
         return next(new ErrorHandler('Job not found.', 404));
+    }
+
+    // Check the the user updating is the owner
+    if (job.user.toString() != req.user.id && req.user.role != 'admin') {
+        return next(new ErrorHandler(`User(${req.user.id}) is not allowed to delete this job.`,));
+    }
+
+    // Delete files associated with job
+    for (let i = 0; i < job.applicantsApplied.length; i++) {
+        let filepath = `${__dirname}/public/uploads/${job.applicantsApplied[i].resume}`.replace('\\controllers', ''); //Replace controllers folder with empty folder so we can access public folder path
+
+        fs.unlink(filepath, err => {
+            if (err) {
+                return console.log(err);
+            }
+        });
     }
 
     job = await Job.findByIdAndDelete(req.params.id);
