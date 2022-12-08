@@ -7,6 +7,7 @@ const fs = require('fs');
 
 // Get current user profile => /api/v1/profile
 exports.getUserProfile = catchAsyncErrors(async (req, res, next) => {
+    console.log(req.user);
     const user = await User.findById(req.user.id).populate({
         path: 'jobsPublished',
         select: 'title postingDate'
@@ -55,6 +56,17 @@ exports.updateUser = catchAsyncErrors(async (req, res, next) => {
     });
 });
 
+// Show all applied jobs => /api/v1/profile/applied
+exports.getAppliedJobs = catchAsyncErrors(async (req, res, next) => {
+    console.log(req.user);
+    const jobs = await Job.find({ 'applicantsApplied.id': req.user.id }).select('+applicantsApplied');
+    res.status(200).json({
+        success: true,
+        results: jobs.length,
+        data: jobs
+    });
+});
+
 // Delete current user => /api/v1/me/delete
 exports.deleteUser = catchAsyncErrors(async (req, res, next) => {
 
@@ -87,9 +99,9 @@ async function deleteUserData(userId, role) {
         for (i = 0; i < appliedJobs.length; i++) {
             let obj = appliedJobs[i].applicantsApplied.find(x => x.id == userId);
 
-            console.log('__dirname: ' + __dirname);
-            let filepath = `${__dirname}/public/uploads/${obj.resume}`.replace('\\controllers', '');
-            console.log('filePath: ' + filepath);
+            // console.log('__dirname: ' + __dirname);
+            let filepath = `${__dirname}/public/uploads/${obj.resume}`.replace('\\controllers', ''); //Replace controllers folder with empty folder so we can access public folder path
+            // console.log('filePath: ' + filepath);
 
             fs.unlink(filepath, err => {
                 if (err) {
@@ -97,6 +109,7 @@ async function deleteUserData(userId, role) {
                 }
             });
 
+            // Remove the applicant from the array of applicants
             appliedJobs[i].applicantsApplied.splice(appliedJobs[i].applicantsApplied.indexOf(obj.id));
 
             await appliedJobs[i].save();
