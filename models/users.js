@@ -36,7 +36,12 @@ const userSchema = new mongoose.Schema({
     //for resetting passwords
     resetPasswordToken: String,
     resetPasswordExpire: Date,
-});
+},
+    {
+        toJSON: { virtuals: true },
+        toObject: { virtuals: true }
+    }
+);
 
 userSchema.pre('save', async function (next) {
 
@@ -73,5 +78,13 @@ userSchema.methods.getResetPasswordToken = function () {
 
     return resetToken;
 }
+
+// Show all jobs created by a user using virtuals
+userSchema.virtual('jobsPublished', {
+    ref: 'Job',
+    localField: '_id',
+    foreignField: 'user',
+    justOne: false
+});
 
 module.exports = mongoose.model('User', userSchema)
