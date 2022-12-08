@@ -58,8 +58,19 @@ exports.updateUser = catchAsyncErrors(async (req, res, next) => {
 
 // Show all applied jobs => /api/v1/profile/applied
 exports.getAppliedJobs = catchAsyncErrors(async (req, res, next) => {
-    console.log(req.user);
+    // console.log(req.user);
     const jobs = await Job.find({ 'applicantsApplied.id': req.user.id }).select('+applicantsApplied');
+    res.status(200).json({
+        success: true,
+        results: jobs.length,
+        data: jobs
+    });
+});
+
+// Show all jobs published by employer => /api/v1/profile/published
+exports.getPublishedJobs = catchAsyncErrors(async (req, res, next) => {
+    const jobs = await Job.find({ user: req.user.id });
+
     res.status(200).json({
         success: true,
         results: jobs.length,
