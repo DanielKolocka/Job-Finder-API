@@ -1,17 +1,24 @@
 const express = require('express');
 const router = express.Router();
 
-const { getUserProfile, updatePassword, updateUser, deleteUser, getAppliedJobs, getPublishedJobs } = require('../controllers/userController');
+const { getUserProfile, updatePassword, updateUser, deleteUser, getAppliedJobs, getPublishedJobs, getUsers, deleteUserAdmin } = require('../controllers/userController');
 const { isAuthenticatedUser, authorizeRoles } = require('../middlewares/auth');
 
-router.route('/profile').get(isAuthenticatedUser, getUserProfile);
-// router.route('/jobs/applied').get(isAuthenticatedUser, authorizeRoles('user'), getAppliedJobs);
-router.route('/profile/applied').get(isAuthenticatedUser, authorizeRoles('user'), getAppliedJobs);
-router.route('/profile/published').get(isAuthenticatedUser, authorizeRoles('employer', 'admin'), getPublishedJobs);
+//So that you don't have to put in every single route
+router.use(isAuthenticatedUser);
 
-router.route('/password/update').put(isAuthenticatedUser, updatePassword);
-router.route('/me/update').put(isAuthenticatedUser, updateUser);
+router.route('/profile').get(getUserProfile);
+// router.route('/jobs/applied').get(authorizeRoles('user'), getAppliedJobs);
+router.route('/profile/applied').get(authorizeRoles('user'), getAppliedJobs);
+router.route('/profile/published').get(authorizeRoles('employer', 'admin'), getPublishedJobs);
 
-router.route('/me/delete').delete(isAuthenticatedUser, deleteUser);
+router.route('/password/update').put(updatePassword);
+router.route('/me/update').put(updateUser);
+
+router.route('/me/delete').delete(deleteUser);
+
+// Admin only route
+router.route('/users').get(authorizeRoles('admin'), getUsers);
+router.route('/users/:id').delete(authorizeRoles('admin'), deleteUserAdmin);
 
 module.exports = router;
