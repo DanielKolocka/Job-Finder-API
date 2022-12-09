@@ -128,7 +128,7 @@ exports.deleteUserAdmin = catchAsyncErrors(async (req, res, next) => {
     }
 
     deleteUserData(user.id, user.role);
-    user.remove();
+    await user.remove();
 
     res.status(200).json({
         success: true,
