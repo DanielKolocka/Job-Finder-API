@@ -5,6 +5,14 @@ const dotenv = require('dotenv');
 const cookieParser = require('cookie-parser');
 const fileUpload = require('express-fileupload');
 
+// Security
+const rateLimit = require('express-rate-limit');
+const helmet = require('helmet');
+const mongoSanitize = require('express-mongo-sanitize');
+const xssClean = require('xss-clean');
+const hpp = require('hpp');
+const cors = require('cors');
+
 //import db
 const connectDataBase = require('./config/database.js');
 const errorMiddleware = require('./middlewares/errors');
@@ -23,6 +31,9 @@ process.on('uncaughtException', err => {
 //Connecting to db
 connectDataBase();
 
+// Setup security headers (helmet)
+app.use(helmet());
+
 //Setup body parser
 app.use(express.json());
 
@@ -31,6 +42,28 @@ app.use(cookieParser());
 
 // Handle file uploads
 app.use(fileUpload());
+
+// Sanitize Data
+app.use(mongoSanitize());
+
+// Prevent xss attacks
+app.use(xssClean());
+
+// Prevent parameter polution. Eg. ?sort=name&sort=salary
+app.use(hpp({
+    whitelist: ['positions'] //Eg. We want to query jobs with positions=2 and positions=10 (hpp would prevent both showing up)
+}));
+
+// Setup CORS - Accessible by other domains
+app.use(cors());
+
+// Rate Limiting
+const limiter = rateLimit({
+    windowMs: process.env.RATE_LIMITER_TIME * 60 * 1000, //Minutes
+    max: process.env.RATE_LIMITER_MAX //Number of requests
+
+});
+app.use(limiter);
 
 //importing routes
 const jobs = require('./routes/jobs.js');
